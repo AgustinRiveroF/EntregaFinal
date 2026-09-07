@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContenidoTransfer",
+  "type": "object",
+  "required": [
+    "id_contenido",
+    "idea_semilla",
+    "estado",
+    "contexto_rag",
+    "ia",
+    "aprobacion"
+  ],
+  "properties": {
+    "id_contenido": {"type": "string"},
+    "idea_semilla": {"type": "string", "minLength": 1},
+    "estado": {"type": "string", "enum": ["Generando", "En revisión", "Aprobado", "Rechazado", "Publicado"]},
+    "contexto_rag": {"type": "array", "items": {"type": "object", "required": ["tema", "contenido"], "properties": {"tema": {"type": "string"}, "categoria": {"type": "string"}, "contenido": {"type": "string"}}}},
+    "ia": {"type": "object", "required": ["modelo", "borrador"], "properties": {"modelo": {"type": "string"}, "borrador": {"type": "string"}}},
+    "aprobacion": {"type": "object", "required": ["aprobado"], "properties": {"aprobado": {"type": "boolean"}, "motivo_rechazo": {"type": ["string", "null"]}}},
+    "canal_salida": {"type": "string", "enum": ["Slack", "Gmail", "WhatsApp", "Ninguno"]}
+  }
+}
