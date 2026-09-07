@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExecutionLog",
+  "type": "object",
+  "required": ["id_ejecucion", "estado", "fecha", "tiene_error"],
+  "properties": {
+    "id_ejecucion": {"type": "string"},
+    "id_contenido": {"type": ["string", "null"]},
+    "estado": {"type": "string", "enum": ["Éxito", "Error", "Bloqueado HITL", "Rechazado"]},
+    "fecha": {"type": "string", "format": "date-time"},
+    "duracion_ms": {"type": ["integer", "null"], "minimum": 0},
+    "modelo_ia": {"type": ["string", "null"]},
+    "resultado": {"type": ["string", "null"]},
+    "tiene_error": {"type": "boolean"}
+  }
+}
