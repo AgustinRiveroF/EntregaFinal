@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RAGContext",
+  "type": "object",
+  "required": ["idea_semilla", "knowledge"],
+  "properties": {
+    "idea_semilla": {"type": "string"},
+    "knowledge": {"type": "array", "items": {"type": "object", "required": ["tema", "contenido"], "properties": {"tema": {"type": "string"}, "categoria": {"type": "string"}, "contenido": {"type": "string"}}}}
+  }
+}
