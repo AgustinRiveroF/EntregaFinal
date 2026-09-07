@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ErrorLog",
+  "type": "object",
+  "required": ["id_error", "nodo", "descripcion", "fecha", "resuelto"],
+  "properties": {
+    "id_error": {"type": "string"},
+    "id_contenido": {"type": ["string", "null"]},
+    "nodo": {"type": "string"},
+    "codigo": {"type": ["string", "null"]},
+    "descripcion": {"type": "string"},
+    "severidad": {"type": "string", "enum": ["Baja", "Media", "Alta", "Crítica"]},
+    "fecha": {"type": "string", "format": "date-time"},
+    "resuelto": {"type": "boolean"}
+  }
+}
