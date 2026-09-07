@@ -55,6 +55,8 @@ Airtable contiene las tablas **Contenido**, **Base de Conocimiento**, **Logs** y
 
 Estados contemplados: `Generando`, `En revisión`, `Aprobado`, `Rechazado`, `Publicado`.
 
+**Shared View pública de la base:** https://airtable.com/app9d2rjDXsLqTRLC/shrpB1FBL0kJDgfNC
+
 ## Human-in-the-loop
 El flujo no permite la salida crítica mientras `Aprobado = false`. Solo `Aprobado = true` junto con `Estado = En revisión` habilita el paso final.
 
@@ -77,7 +79,7 @@ La interfaz de Airtable `Centro de Comando HITL` contiene:
 - errores registrados;
 - errores por severidad.
 
-**URL pública del Dashboard:** `PENDIENTE_COPIAR_ENLACE_PUBLICO`
+**URL pública del Dashboard Ejecutivo:** https://airtable.com/app9d2rjDXsLqTRLC/shrvZ2RPRVhFF9rLU
 
 ## Demo
 **Video demo (3 min):** `PENDIENTE_GRABAR_VIDEO`
@@ -93,8 +95,8 @@ La interfaz de Airtable `Centro de Comando HITL` contiene:
 - [x] Slack integrado en revisión, salida y contingencia
 - [x] Ruta Rechazado creada
 - [x] Validación de datos incompletos creada
+- [x] Enlace público de Shared View / interfaz confirmado en incógnito
 - [ ] Ejecutar 5 pruebas finales del flujo actualizado
-- [ ] Copiar enlace público de Shared View / interfaz
 - [ ] Exportar blueprints actualizados de Make
 - [ ] Subir evidencias finales de ejecución
 - [ ] Video demo de 3 minutos
