@@ -1,107 +1,109 @@
 # Ecosistema de Automatización IA Autónomo para Negocios
 
-Proyecto final de AI Automation: pipeline autónomo de contenido con **Make + Airtable + OpenAI + RAG + HITL + Slack**.
+Proyecto final de **AI Automation — CoderHouse**. Implementa un pipeline de contenido con **Airtable + Make + OpenAI + RAG + HITL + Slack**, concentrado en **un único escenario de Make** para reducir consumo operativo y mantener toda la lógica auditable en un solo flujo.
 
-## Arquitectura
-1. Airtable detecta `Estado = Generando`.
-2. Valida que `Idea Semilla` exista.
-3. Recupera contexto de `Base de Conocimiento`.
-4. Agrega el contexto RAG.
-5. OpenAI genera un borrador mediante prompt estructurado.
-6. Airtable guarda el borrador en `En revisión`.
-7. Slack notifica que existe una pieza pendiente.
-8. El sistema queda bloqueado por HITL.
-9. Cuando `Aprobado = true`, el flujo entrega la salida y actualiza a `Publicado`.
-10. Si se rechaza, se registra `Rechazado` y no se ejecuta salida externa.
-11. Logs y Errores alimentan el Dashboard Ejecutivo.
+## Arquitectura final
 
-## Escenarios Make finales
-- `FINAL - Generación RAG + HITL + Resiliencia`
-  - RAG + OpenAI
-  - Slack de revisión
-  - Log de éxito
-  - Error Handler sobre OpenAI
-  - Registro en Airtable `Errores`
-  - Slack de contingencia
-  - Break con 3 reintentos
-- `FINAL - Aprobación HITL + Salida + Logs`
-  - filtro `Aprobado = true` + `Estado = En revisión`
-  - actualización a `Publicado`
-  - Slack de salida
-  - Log de publicación
-  - Error Handler de actualización
-- `FINAL - Rechazo HITL + Logs`
-  - procesa `Estado = Rechazado`
-  - notifica en Slack
-  - registra log sin salida externa
-- `FINAL - Validación de Datos Incompletos`
-  - bloquea `Estado = Generando` con `Idea Semilla` vacía
-  - registra error antes de consumir IA
-  - alerta en Slack
+**Escenario único:** `FINAL - Pipeline IA RAG + HITL + Resiliencia`
 
-## Entregables
-- `docs/arquitectura_sistema.pdf`
-- `docs/manual_operativo_datos.pdf`
-- `docs/matriz_costos.pdf`
-- `docs/seguridad_resiliencia.pdf`
-- `blueprints/` - Blueprints exportados de Make
-- `schemas/` - JSON Schema de transferencia
-- `prompts/` - Prompt estructurado y ejemplo de `cache_control`
-- `screenshots/` - Evidencias de ejecución
-- `tests/stress_test_plan.md`
+El trigger `Airtable / Watch Records` observa la tabla `Contenido` y un Router separa rutas mutuamente controladas:
 
-## Base de datos
-Airtable contiene las tablas **Contenido**, **Base de Conocimiento**, **Logs** y **Errores**, vinculadas para mantener trazabilidad.
-
-Estados contemplados: `Generando`, `En revisión`, `Aprobado`, `Rechazado`, `Publicado`.
-
-**Shared View pública de la base:** https://airtable.com/app9d2rjDXsLqTRLC/shrpB1FBL0kJDgfNC
+1. **Generación RAG** — `Estado = Generando` + `Idea Semilla` no vacía.
+   - consulta `Base de Conocimiento`;
+   - agrega `Tema + Contenido` como contexto privado;
+   - GPT-5 nano genera el borrador sin recurrir a información externa;
+   - actualiza el registro a `En revisión` y fuerza `Aprobado = false`;
+   - notifica por Slack y registra trazabilidad.
+2. **Validación de entrada** — `Estado = Generando` + `Idea Semilla` vacía.
+   - bloquea el consumo de IA;
+   - registra el incidente en `Errores`;
+   - alerta por Slack.
+3. **Aprobación HITL** — `Aprobado = true` + `Estado = En revisión`.
+   - copia `Borrador IA` a `Resultado final`;
+   - cambia a `Publicado`;
+   - notifica y registra log de publicación.
+4. **Rechazo HITL** — `Estado = Rechazado`.
+   - no produce ninguna salida externa;
+   - notifica el rechazo y registra trazabilidad.
+5. **Resiliencia**.
+   - errores del nodo de IA y de publicación se registran en la tabla `Errores`;
+   - las rutas críticas emiten alertas operativas en Slack;
+   - ningún fallo se interpreta como publicación exitosa.
 
 ## Human-in-the-loop
-El flujo no permite la salida crítica mientras `Aprobado = false`. Solo `Aprobado = true` junto con `Estado = En revisión` habilita el paso final.
 
-## Seguridad y resiliencia
-- Minimización de datos.
-- Sin API keys ni credenciales en este repositorio.
-- Trigger filtrado para evitar loops.
-- Validación de datos antes del modelo.
-- Error Handling con registro operativo.
-- Break con reintentos automáticos.
-- Revisión humana antes de interactuar con el exterior.
+La IA **nunca publica por sí sola**. Al terminar la generación el registro queda en:
 
-## Dashboard
-La interfaz de Airtable `Centro de Comando HITL` contiene:
-- total de piezas;
-- piezas por estado;
-- total de ejecuciones;
-- tasa de errores;
-- ejecuciones por estado;
-- errores registrados;
-- errores por severidad.
+`Estado = En revisión` + `Aprobado = false`
 
-**URL pública del Dashboard Ejecutivo:** https://airtable.com/app9d2rjDXsLqTRLC/shrvZ2RPRVhFF9rLU
+Solo la acción humana de marcar `Aprobado = true`, manteniendo `Estado = En revisión`, habilita la ruta final a `Publicado`.
 
-## Demo
-**Video demo (3 min):** `PENDIENTE_GRABAR_VIDEO`
+## RAG privado
 
-## Estado de validación
-- [x] RAG funcional
-- [x] HITL bloqueado demostrado
-- [x] HITL aprobado demostrado
-- [x] Airtable relacional creado
-- [x] Dashboard construido y publicado en Airtable
-- [x] Error Handler final agregado en Make
-- [x] Logs y tabla de Errores conectados a Make
-- [x] Slack integrado en revisión, salida y contingencia
-- [x] Ruta Rechazado creada
-- [x] Validación de datos incompletos creada
-- [x] Enlace público de Shared View / interfaz confirmado en incógnito
-- [ ] Ejecutar 5 pruebas finales del flujo actualizado
-- [ ] Exportar blueprints actualizados de Make
-- [ ] Subir evidencias finales de ejecución
-- [ ] Video demo de 3 minutos
+La tabla `Base de Conocimiento` contiene información atómica como tono de marca, producto, público objetivo, restricciones y CTA. Make recupera esos registros y los agrega antes de llamar al modelo. El prompt instruye al modelo a utilizar exclusivamente ese contexto y la `Idea Semilla`.
 
-## Bloqueo actual de pruebas
-Make devolvió: `Scenario cannot be run because its organization or team is paused. Resolve the exceeded operations or data transfer limit and try again.`
+## Airtable
 
-La arquitectura ya está configurada; para completar las pruebas reales hay que reactivar la capacidad de ejecución de la organización/equipo de Make.
+Base: `Pipeline de Contenido IA`
+
+Tablas principales:
+- `Contenido`
+- `Base de Conocimiento`
+- `Logs`
+- `Errores`
+
+Estados del ciclo de vida:
+
+`Generando → En revisión → Publicado`
+
+También se contempla `Rechazado` como salida humana sin publicación.
+
+**Shared View:** https://airtable.com/app9d2rjDXsLqTRLC/shrpB1FBL0kJDgfNC
+
+## Dashboard Ejecutivo
+
+La interfaz pública `Centro de Comando HITL` permite supervisar piezas, estados, ejecuciones, errores y severidad.
+
+**Dashboard:** https://airtable.com/app9d2rjDXsLqTRLC/shrvZ2RPRVhFF9rLU
+
+## Seguridad y buenas prácticas
+
+- No se almacenan API keys ni credenciales en GitHub.
+- Validación de datos antes de consumir IA.
+- Rutas filtradas para evitar procesamiento fuera del estado esperado.
+- Contexto RAG privado y controlado.
+- HITL obligatorio antes de la salida final.
+- Tabla independiente de errores y logs operativos.
+- Alertas por Slack para revisión, rechazo e incidentes.
+- Prompt con restricciones explícitas contra invención de datos.
+- Diseño optimizado para el plan gratuito de Make: un único escenario activo.
+
+## Estructura del repositorio
+
+- `blueprints/` — snapshot técnico del escenario final.
+- `prompts/` — prompt de generación y material complementario.
+- `schemas/` — contratos JSON de transferencia, contexto, logs y errores.
+- `tests/` — plan de validación funcional y de resiliencia.
+
+## Criterios funcionales de validación
+
+- Idea válida → generación con RAG → `En revisión`.
+- Sin aprobación humana → no existe publicación.
+- Aprobación humana → `Publicado` + `Resultado final`.
+- Rechazo humano → log de rechazo y cero publicación.
+- Idea vacía → bloqueo previo al modelo.
+- Fallo de IA/publicación → registro de error + alerta operativa.
+
+## Evidencia recomendada para la entrega
+
+1. Captura completa del escenario único con Router y rutas.
+2. Registro en Airtable en `En revisión` con `Aprobado = false`.
+3. Evidencia de que la ruta de publicación no avanza sin aprobación.
+4. Registro aprobado terminando en `Publicado` y `Resultado final`.
+5. Registro rechazado sin salida externa.
+6. Validación de `Idea Semilla` vacía sin consumo de IA.
+7. Tabla de Logs y Errores + Dashboard Ejecutivo.
+
+## Estado
+
+Arquitectura consolidada a un único escenario para la entrega final. Los escenarios históricos separados quedan fuera de la arquitectura final y no deben permanecer activos.
