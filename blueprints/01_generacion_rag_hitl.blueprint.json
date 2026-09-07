@@ -1,4 +1,73 @@
 {
-  "name": "Generación de contenido HITL",
-  "note": "Blueprint técnico de respaldo exportado del escenario de generación RAG + HITL. El archivo completo está también incluido en el paquete descargable de la entrega."
+  "name": "FINAL - Pipeline IA RAG + HITL + Resiliencia",
+  "scenarioId": 6189006,
+  "status": "active",
+  "scheduleSeconds": 900,
+  "architecture": {
+    "trigger": "Airtable Watch Records sobre Contenido / Última modificación",
+    "router": [
+      {
+        "route": "Aprobación HITL",
+        "condition": "Aprobado = true AND Estado = En revisión",
+        "actions": [
+          "Actualizar Estado a Publicado",
+          "Copiar Borrador IA a Resultado final",
+          "Registrar fecha de ejecución",
+          "Notificar publicación en Slack",
+          "Crear Log de publicación exitosa"
+        ],
+        "errorHandler": [
+          "Registrar AIRTABLE_UPDATE_ERROR en Airtable",
+          "Alertar error de publicación en Slack"
+        ]
+      },
+      {
+        "route": "Rechazo HITL",
+        "condition": "Estado = Rechazado",
+        "actions": [
+          "Notificar rechazo en Slack",
+          "Registrar Log Rechazado",
+          "No publicar"
+        ]
+      },
+      {
+        "route": "Validación de datos incompletos",
+        "condition": "Estado = Generando AND Idea Semilla vacía",
+        "actions": [
+          "Registrar MISSING_IDEA_SEED en Errores",
+          "Alertar en Slack",
+          "No consumir IA"
+        ]
+      },
+      {
+        "route": "Generación RAG",
+        "condition": "Estado = Generando AND Idea Semilla no vacía",
+        "actions": [
+          "Buscar hasta 20 registros en Base de Conocimiento",
+          "Agregar Tema + Contenido",
+          "Generar borrador con GPT-5 nano",
+          "Actualizar Estado a En revisión",
+          "Forzar Aprobado = false",
+          "Notificar revisión en Slack",
+          "Registrar Log de generación"
+        ],
+        "errorHandler": [
+          "Registrar OPENAI_RUNTIME_ERROR en Airtable",
+          "Alertar error IA en Slack"
+        ]
+      }
+    ]
+  },
+  "connections": {
+    "airtable": "todopara's Airtable OAuth connection",
+    "slack": "todopara spam's Slack credentials"
+  },
+  "security": [
+    "No se incluyen API keys ni secretos",
+    "Validación antes del consumo de IA",
+    "HITL obligatorio antes de publicación",
+    "RAG limitado a contexto privado",
+    "Logs y errores separados"
+  ],
+  "note": "Snapshot técnico sanitizado de la arquitectura final. Las credenciales reales permanecen únicamente en Make."
 }
