@@ -13,16 +13,19 @@ Resultado observado:
 - Buscar conocimiento: OK
 - Text Aggregator: OK
 - GPT-5 nano: OK
+- límite de salida configurado: 700 tokens
 - Update a `En revisión`: OK
 - Slack de revisión: OK
+- guardado de `Slack Thread TS`: OK
 - Log de generación: OK
 
-Ejecución: 7 módulos, 0 errores, 8.03 créditos.
+Prueba posterior a la rúbrica: ejecución `e4f6d114b4ee4e188b98ba95073ed906`: 8 operaciones, 0 errores, 9.21 créditos.
 
 El registro terminó con:
 - `Estado = En revisión`
 - `Borrador IA` completo
 - `Aprobado` sin marcar
+- `Slack Thread TS = 1788835171.121349`
 - sin `Resultado final`
 
 Esto confirma que la IA genera pero no publica.
@@ -35,9 +38,12 @@ Resultado observado:
 - actualización a `Publicado`: OK
 - copia de `Borrador IA` a `Resultado final`: OK
 - Slack de publicación: OK
+- la publicación respondió en el mismo hilo usando `thread_ts`: OK
 - Log de publicación: OK
 
-Ejecución: 4 módulos, 0 errores, 4 créditos.
+Prueba posterior a la rúbrica: ejecución `6194e7390cd54569b90690e8a9709707`: 4 operaciones, 0 errores, 4 créditos.
+
+La entrada real del módulo Slack confirmó `thread_ts = 1788835171.121349` y la respuesta de Slack devolvió el mismo `thread_ts`.
 
 ## 3. Rechazo HITL
 
@@ -93,15 +99,29 @@ Corrección aplicada:
 - módulo `Rechazado - Marcar procesado` al final de la ruta de rechazo
 - módulo `Incompleto - Marcar procesado` al final de la ruta de dato incompleto
 
-Prueba final definitiva:
-- se crearon dos registros nuevos, uno `Rechazado` y otro `Generando` sin Idea Semilla;
-- ejecución `75075260a2b743da9824014faabf42ec`: 7 operaciones, 0 errores; ejecutó Slack + Log/Error + módulos de marcado 31 y 32;
-- ejecución inmediatamente posterior `7c45126558b64fc4bb2982f67c53e458`: 1 operación, 0 errores, 1 crédito; solo se ejecutó el trigger y ninguna ruta volvió a procesar los registros.
+Prueba definitiva:
+- ejecución `75075260a2b743da9824014faabf42ec`: procesó rechazo + dato incompleto con sus flags;
+- ejecución posterior `7c45126558b64fc4bb2982f67c53e458`: 1 operación, 0 errores, solo trigger; ninguna ruta se reprocesó.
 
 Resultado anti-loop: PASS.
 
-## 8. Veredicto
+## 8. Optimización de IA
 
-Las rutas funcionales principales, HITL, RAG, validación de entrada, trazabilidad, alertas, manejo de errores, retries e idempotencia fueron comprobados con ejecuciones reales.
+Configuración final del módulo OpenAI:
+- modelo: `gpt-5-nano`
+- máximo de salida: `700` tokens
+- prompt dinámico con `Idea Semilla` y contexto RAG agregado
+- instrucción adicional: máximo 220 palabras
 
-El escenario final queda apto para demostración y entrega. La única ejecución incompleta visible en Make corresponde a la prueba intencional de error de publicación; no representa un fallo actual del blueprint.
+## 9. Estado final
+
+- escenario activo: sí
+- ejecuciones incompletas: 0
+- conexiones Airtable y Slack: OK
+- RAG: PASS
+- HITL: PASS
+- Thread ID Slack: PASS
+- Error Handlers + Break/Retry: PASS
+- anti-loop: PASS
+
+El escenario queda apto para demostración y entrega.
