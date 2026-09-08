@@ -28,23 +28,30 @@ Acciones:
 
 Error handling:
 - registrar `AIRTABLE_UPDATE_ERROR`;
-- alertar por Slack.
+- alertar por Slack;
+- `Retry/Break`: 3 intentos, 1 minuto entre intentos.
 
 #### Ruta 2 — Rechazo HITL
-Condición: `Estado = Rechazado`.
+Condición: `Estado = Rechazado` AND `Rechazo procesado != true`.
 
 Acciones:
 - notificar rechazo;
 - registrar log;
+- marcar `Rechazo procesado = true`;
 - no producir salida externa.
 
+La marca interna evita que Airtable vuelva a disparar la misma ruta cuando el vínculo a Logs modifica `Última modificación`.
+
 #### Ruta 3 — Dato incompleto
-Condición: `Estado = Generando` AND `Idea Semilla` vacía.
+Condición: `Estado = Generando` AND `Idea Semilla` vacía AND `Dato incompleto registrado != true`.
 
 Acciones:
 - registrar `MISSING_IDEA_SEED`;
 - alertar por Slack;
+- marcar `Dato incompleto registrado = true`;
 - bloquear consumo de IA.
+
+La marca interna evita duplicados cuando Airtable actualiza el vínculo a Errores.
 
 #### Ruta 4 — Generación RAG
 Condición: `Estado = Generando` AND `Idea Semilla` no vacía.
@@ -60,7 +67,8 @@ Acciones:
 
 Error handling:
 - registrar `OPENAI_RUNTIME_ERROR`;
-- alertar por Slack.
+- alertar por Slack;
+- `Retry/Break`: 3 intentos, 1 minuto entre intentos.
 
 ## Control HITL
 
@@ -74,11 +82,24 @@ La IA no tiene una ruta que publique directamente después de generar. El borrad
 - filtros de estado para evitar procesamiento indebido;
 - logs y errores persistentes en Airtable;
 - alertas operativas en Slack;
+- reintentos controlados en operaciones críticas;
+- protección anti-loop en rechazo y dato incompleto;
 - separación entre generación, validación, rechazo y publicación mediante rutas del Router.
 
-## Evidencias para CoderHouse
+## Validación runtime
 
-Las capturas recomendadas son:
+Se validó el flujo con ejecuciones reales:
+
+- Generación RAG: PASS.
+- Aprobación HITL y publicación: PASS.
+- Rechazo: PASS.
+- Idea Semilla vacía: PASS.
+- Error de publicación simulado: PASS del Error Handler.
+- Anti-loop: PASS; una modificación posterior sobre registros ya procesados ejecutó únicamente el trigger y ninguna ruta secundaria.
+
+Los detalles se documentan en `docs/VALIDACION_RUNTIME.md`.
+
+## Evidencias para CoderHouse
 
 1. escenario completo con Router y 4 rutas;
 2. contenido generado en `En revisión` y `Aprobado = false`;
@@ -86,7 +107,8 @@ Las capturas recomendadas son:
 4. publicación posterior a aprobación humana;
 5. rechazo humano sin salida externa;
 6. validación de Idea Semilla vacía sin consumo IA;
-7. tablas Logs / Errores y Dashboard Ejecutivo.
+7. Error Handler + Retry/Break;
+8. tablas Logs / Errores y Dashboard Ejecutivo.
 
 ## Estado operativo
 
