@@ -11,7 +11,7 @@ Proyecto final de **AI Automation — CoderHouse**: pipeline de contenido con **
 - **Validación runtime:** [`docs/VALIDACION_RUNTIME.md`](docs/VALIDACION_RUNTIME.md)
 - **Pruebas de estrés:** [`tests/stress_test_plan.md`](tests/stress_test_plan.md)
 - **Evidencias:** [`evidencias/`](evidencias/)
-- **Guion video demo 3 min:** [`docs/VIDEO_DEMO_3_MIN.md`](docs/VIDEO_DEMO_3_MIN.md)
+- **Video demo:** https://drive.google.com/file/d/1BDnjiZAssCU7JAr0u-Xg6TSDdnUIbLRv/view?usp=drivesdk
 
 ## Enlaces públicos obligatorios
 
