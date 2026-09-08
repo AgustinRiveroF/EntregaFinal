@@ -6,7 +6,7 @@ Proyecto final de **AI Automation — CoderHouse**: pipeline de contenido con **
 
 - **PDF final (5 criterios de rúbrica):** [`docs/Entrega_Final_CoderHouse_Ecosistema_IA.pdf`](docs/Entrega_Final_CoderHouse_Ecosistema_IA.pdf)
 - **Índice de entrega:** [`docs/ENTREGA_FINAL.md`](docs/ENTREGA_FINAL.md)
-- **Blueprint técnico:** [`blueprints/FINAL_pipeline_ia_rag_hitl_resiliencia.blueprint`](blueprints/FINAL_pipeline_ia_rag_hitl_resiliencia.blueprint)
+- **Blueprint nativo exportado de Make:** [`blueprints/FINAL - Pipeline IA RAG + HITL + Resiliencia.blueprint.json`](blueprints/FINAL%20-%20Pipeline%20IA%20RAG%20%2B%20HITL%20%2B%20Resiliencia.blueprint.json)
 - **Schemas JSON:** [`schemas/`](schemas/)
 - **Validación runtime:** [`docs/VALIDACION_RUNTIME.md`](docs/VALIDACION_RUNTIME.md)
 - **Pruebas de estrés:** [`tests/stress_test_plan.md`](tests/stress_test_plan.md)
