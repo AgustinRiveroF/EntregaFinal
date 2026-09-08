@@ -1,11 +1,26 @@
-# Plan de pruebas de estrés
+# Plan y resultados de pruebas
 
-| Test | Entrada | Resultado esperado | Evidencia |
+| Test | Entrada | Resultado esperado | Resultado real |
 |---|---|---|---|
-| 1 | Idea válida + aprobación | Publicado + Log Éxito | Make + Airtable |
-| 2 | Idea válida sin aprobación | Bloqueado por HITL | Filtro = 0 |
-| 3 | Rechazo humano | Estado Rechazado + Log Rechazado | Airtable |
-| 4 | Idea Semilla vacía | Error de validación, sin IA | Errores + Make |
-| 5 | Fallo IA simulado | Retry/Break + Error + Slack | Error Handler |
+| 1 | Idea válida | Generación RAG + `En revisión` | PASS — 7 módulos, 0 errores |
+| 2 | Aprobación humana | `Publicado` + `Resultado final` + Log | PASS — 4 módulos, 0 errores |
+| 3 | Rechazo humano | Slack + Log, sin publicación | PASS |
+| 4 | Idea Semilla vacía | Error de validación, sin IA | PASS |
+| 5 | Error de publicación simulado | Error Handler + Airtable + Slack | PASS |
+| 6 | Modificar rechazo ya procesado | No reprocesar | PASS — solo ejecutó el trigger |
+| 7 | Modificar dato incompleto ya registrado | No reprocesar | PASS — solo ejecutó el trigger |
 
-No marcar un test como aprobado sin evidencia real.
+## Resiliencia configurada
+
+- Generación IA: Error Handler + Airtable + Slack + Retry/Break de 3 intentos, 1 minuto.
+- Publicación: Error Handler + Airtable + Slack + Retry/Break de 3 intentos, 1 minuto.
+
+## Evidencia de consumo observado
+
+- Generación RAG: 8.03 créditos.
+- Aprobación: 4 créditos.
+- Rechazo + dato incompleto en una misma corrida: 5 créditos.
+- Error de publicación simulado: 8 créditos.
+- Validación anti-loop final: 1 crédito (solo trigger).
+
+No marcar un test como aprobado sin evidencia real. Esta tabla refleja ejecuciones observadas en Make durante la validación final.
