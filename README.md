@@ -6,7 +6,7 @@ Proyecto final de **AI Automation — CoderHouse**. Implementa un pipeline de co
 
 **Escenario único:** `FINAL - Pipeline IA RAG + HITL + Resiliencia`
 
-El trigger `Airtable / Watch Records` observa la tabla `Contenido` y un Router separa rutas mutuamente controladas:
+El trigger `Airtable / Watch Records` observa la tabla `Contenido` y un Router separa cuatro rutas controladas:
 
 1. **Generación RAG** — `Estado = Generando` + `Idea Semilla` no vacía.
    - consulta `Base de Conocimiento`;
@@ -14,21 +14,20 @@ El trigger `Airtable / Watch Records` observa la tabla `Contenido` y un Router s
    - GPT-5 nano genera el borrador sin recurrir a información externa;
    - actualiza el registro a `En revisión` y fuerza `Aprobado = false`;
    - notifica por Slack y registra trazabilidad.
-2. **Validación de entrada** — `Estado = Generando` + `Idea Semilla` vacía.
+2. **Validación de entrada** — `Estado = Generando` + `Idea Semilla` vacía + `Dato incompleto registrado != true`.
    - bloquea el consumo de IA;
    - registra el incidente en `Errores`;
-   - alerta por Slack.
+   - alerta por Slack;
+   - marca `Dato incompleto registrado = true` para evitar reprocesamientos.
 3. **Aprobación HITL** — `Aprobado = true` + `Estado = En revisión`.
    - copia `Borrador IA` a `Resultado final`;
    - cambia a `Publicado`;
    - notifica y registra log de publicación.
-4. **Rechazo HITL** — `Estado = Rechazado`.
+4. **Rechazo HITL** — `Estado = Rechazado` + `Rechazo procesado != true`.
    - no produce ninguna salida externa;
-   - notifica el rechazo y registra trazabilidad.
-5. **Resiliencia**.
-   - errores del nodo de IA y de publicación se registran en la tabla `Errores`;
-   - las rutas críticas emiten alertas operativas en Slack;
-   - ningún fallo se interpreta como publicación exitosa.
+   - notifica el rechazo;
+   - registra trazabilidad;
+   - marca `Rechazo procesado = true` para evitar reprocesamientos.
 
 ## Human-in-the-loop
 
@@ -41,6 +40,15 @@ Solo la acción humana de marcar `Aprobado = true`, manteniendo `Estado = En rev
 ## RAG privado
 
 La tabla `Base de Conocimiento` contiene información atómica como tono de marca, producto, público objetivo, restricciones y CTA. Make recupera esos registros y los agrega antes de llamar al modelo. El prompt instruye al modelo a utilizar exclusivamente ese contexto y la `Idea Semilla`.
+
+## Resiliencia
+
+Las dos operaciones críticas tienen Error Handler:
+
+- **Generación IA**: registra `OPENAI_RUNTIME_ERROR`, alerta por Slack y usa `Retry/Break` con **3 intentos automáticos** y 1 minuto entre intentos.
+- **Publicación**: registra `AIRTABLE_UPDATE_ERROR`, alerta por Slack y usa `Retry/Break` con **3 intentos automáticos** y 1 minuto entre intentos.
+
+Ningún error crítico se interpreta como publicación exitosa.
 
 ## Airtable
 
@@ -57,6 +65,10 @@ Estados del ciclo de vida:
 `Generando → En revisión → Publicado`
 
 También se contempla `Rechazado` como salida humana sin publicación.
+
+Campos internos anti-loop:
+- `Rechazo procesado`
+- `Dato incompleto registrado`
 
 **Shared View:** https://airtable.com/app9d2rjDXsLqTRLC/shrpB1FBL0kJDgfNC
 
@@ -76,33 +88,29 @@ La interfaz pública `Centro de Comando HITL` permite supervisar piezas, estados
 - Tabla independiente de errores y logs operativos.
 - Alertas por Slack para revisión, rechazo e incidentes.
 - Prompt con restricciones explícitas contra invención de datos.
+- Protección anti-loop para eventos que modifican campos vinculados en Airtable.
 - Diseño optimizado para el plan gratuito de Make: un único escenario activo.
+
+## Validación runtime realizada
+
+Se ejecutó una batería real de pruebas sobre el escenario final:
+
+- **Generación RAG:** PASS — 7 módulos, 0 errores, borrador creado y detenido en `En revisión`.
+- **Aprobación HITL:** PASS — 4 módulos, 0 errores, `Publicado` + `Resultado final` + Slack + Log.
+- **Rechazo HITL:** PASS — Slack + Log, sin publicación.
+- **Dato incompleto:** PASS — Error + Slack, sin consumo de IA.
+- **Error de publicación simulado:** PASS — falló el módulo de publicación, el Error Handler creó el registro de error y alertó por Slack.
+- **Anti-loop:** PASS — al modificar registros ya procesados, el trigger los detectó pero las rutas quedaron bloqueadas; la ejecución consumió solo el trigger.
+
+El detalle se encuentra en `docs/VALIDACION_RUNTIME.md` y `tests/stress_test_plan.md`.
 
 ## Estructura del repositorio
 
-- `blueprints/` — snapshot técnico del escenario final.
-- `prompts/` — prompt de generación y material complementario.
+- `blueprints/` — snapshot técnico sanitizado del escenario final.
+- `docs/` — arquitectura final y evidencia de validación runtime.
+- `prompts/` — prompt de generación.
 - `schemas/` — contratos JSON de transferencia, contexto, logs y errores.
-- `tests/` — plan de validación funcional y de resiliencia.
-
-## Criterios funcionales de validación
-
-- Idea válida → generación con RAG → `En revisión`.
-- Sin aprobación humana → no existe publicación.
-- Aprobación humana → `Publicado` + `Resultado final`.
-- Rechazo humano → log de rechazo y cero publicación.
-- Idea vacía → bloqueo previo al modelo.
-- Fallo de IA/publicación → registro de error + alerta operativa.
-
-## Evidencia recomendada para la entrega
-
-1. Captura completa del escenario único con Router y rutas.
-2. Registro en Airtable en `En revisión` con `Aprobado = false`.
-3. Evidencia de que la ruta de publicación no avanza sin aprobación.
-4. Registro aprobado terminando en `Publicado` y `Resultado final`.
-5. Registro rechazado sin salida externa.
-6. Validación de `Idea Semilla` vacía sin consumo de IA.
-7. Tabla de Logs y Errores + Dashboard Ejecutivo.
+- `tests/` — plan y resultados de validación funcional y de resiliencia.
 
 ## Estado
 
