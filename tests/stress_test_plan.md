@@ -23,4 +23,3 @@
 - Error de publicación simulado: 8 créditos.
 - Validación anti-loop final: 1 crédito (solo trigger).
 
-No marcar un test como aprobado sin evidencia real. Esta tabla refleja ejecuciones observadas en Make durante la validación final.
