@@ -19,4 +19,3 @@ Esta carpeta contiene capturas y referencias de validacion.
 - Airtable Dashboard: KPIs y tasa de errores.
 - Slack: mensajes de revision/publicacion/rechazo/error.
 
-No incluir API Keys, tokens ni pantallas de credenciales.
