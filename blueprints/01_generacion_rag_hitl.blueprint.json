@@ -1,7 +1,6 @@
 {
   "name": "FINAL - Pipeline IA RAG + HITL + Resiliencia",
   "scenarioId": 6189006,
-  "status": "active",
   "scheduleSeconds": 900,
   "architecture": {
     "trigger": "Airtable Watch Records sobre Contenido / Última modificación",
@@ -18,24 +17,27 @@
         ],
         "errorHandler": [
           "Registrar AIRTABLE_UPDATE_ERROR en Airtable",
-          "Alertar error de publicación en Slack"
+          "Alertar error de publicación en Slack",
+          "Retry/Break: 3 intentos, intervalo 1 minuto"
         ]
       },
       {
         "route": "Rechazo HITL",
-        "condition": "Estado = Rechazado",
+        "condition": "Estado = Rechazado AND Rechazo procesado != true",
         "actions": [
           "Notificar rechazo en Slack",
           "Registrar Log Rechazado",
+          "Marcar Rechazo procesado = true",
           "No publicar"
         ]
       },
       {
         "route": "Validación de datos incompletos",
-        "condition": "Estado = Generando AND Idea Semilla vacía",
+        "condition": "Estado = Generando AND Idea Semilla vacía AND Dato incompleto registrado != true",
         "actions": [
           "Registrar MISSING_IDEA_SEED en Errores",
           "Alertar en Slack",
+          "Marcar Dato incompleto registrado = true",
           "No consumir IA"
         ]
       },
@@ -53,21 +55,27 @@
         ],
         "errorHandler": [
           "Registrar OPENAI_RUNTIME_ERROR en Airtable",
-          "Alertar error IA en Slack"
+          "Alertar error IA en Slack",
+          "Retry/Break: 3 intentos, intervalo 1 minuto"
         ]
       }
     ]
   },
-  "connections": {
-    "airtable": "todopara's Airtable OAuth connection",
-    "slack": "todopara spam's Slack credentials"
+  "runtimeValidation": {
+    "generationRAG": "PASS",
+    "approvalHITL": "PASS",
+    "rejection": "PASS",
+    "missingIdeaSeed": "PASS",
+    "publicationErrorHandler": "PASS",
+    "antiLoop": "PASS"
   },
   "security": [
     "No se incluyen API keys ni secretos",
     "Validación antes del consumo de IA",
     "HITL obligatorio antes de publicación",
     "RAG limitado a contexto privado",
-    "Logs y errores separados"
+    "Logs y errores separados",
+    "Protección anti-loop para rechazo y dato incompleto"
   ],
   "note": "Snapshot técnico sanitizado de la arquitectura final. Las credenciales reales permanecen únicamente en Make."
 }
