@@ -46,6 +46,7 @@ Caso: registro con `Estado = Rechazado` y motivo de rechazo.
 Resultado observado:
 - Slack de rechazo: OK
 - Log `Rechazado`: OK
+- marcado `Rechazo procesado = true`: OK
 - cero publicación externa: OK
 
 ## 4. Dato incompleto
@@ -55,6 +56,7 @@ Caso: registro con `Estado = Generando` e `Idea Semilla` vacía.
 Resultado observado:
 - creación de `MISSING_IDEA_SEED`: OK
 - Slack de alerta: OK
+- marcado `Dato incompleto registrado = true`: OK
 - no se ejecutó el modelo: OK
 
 ## 5. Error de publicación
@@ -88,16 +90,18 @@ Corrección aplicada:
 - campo `Rechazo procesado`
 - campo `Dato incompleto registrado`
 - filtros de ruta exigen que dichos flags todavía no sean `true`
-- cada ruta marca su flag al terminar
+- módulo `Rechazado - Marcar procesado` al final de la ruta de rechazo
+- módulo `Incompleto - Marcar procesado` al final de la ruta de dato incompleto
 
-Prueba final:
-- se modificaron nuevamente ambos registros ya marcados
-- el trigger detectó cambios
-- ninguna ruta de rechazo o dato incompleto volvió a ejecutarse
-- la ejecución consumió únicamente 1 crédito correspondiente al trigger
+Prueba final definitiva:
+- se crearon dos registros nuevos, uno `Rechazado` y otro `Generando` sin Idea Semilla;
+- ejecución `75075260a2b743da9824014faabf42ec`: 7 operaciones, 0 errores; ejecutó Slack + Log/Error + módulos de marcado 31 y 32;
+- ejecución inmediatamente posterior `7c45126558b64fc4bb2982f67c53e458`: 1 operación, 0 errores, 1 crédito; solo se ejecutó el trigger y ninguna ruta volvió a procesar los registros.
 
-Resultado: PASS.
+Resultado anti-loop: PASS.
 
-## Veredicto
+## 8. Veredicto
 
-Las rutas funcionales principales, HITL, RAG, validación de entrada, trazabilidad, alertas, manejo de errores y control anti-loop fueron comprobados con ejecuciones reales.
+Las rutas funcionales principales, HITL, RAG, validación de entrada, trazabilidad, alertas, manejo de errores, retries e idempotencia fueron comprobados con ejecuciones reales.
+
+El escenario final queda apto para demostración y entrega. La única ejecución incompleta visible en Make corresponde a la prueba intencional de error de publicación; no representa un fallo actual del blueprint.
