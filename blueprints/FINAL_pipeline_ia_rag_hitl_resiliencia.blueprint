@@ -3,53 +3,48 @@
   "scenarioId": 6189006,
   "orchestrator": "Make",
   "status": "active",
-  "scheduling": {
-    "type": "indefinitely",
-    "intervalSeconds": 900,
-    "trigger": "Airtable Watch Records sobre tabla Contenido por Ultima modificacion"
-  },
-  "connections": {
-    "airtable": "todopara's Airtable OAuth connection",
-    "slack": "todopara spam's Slack credentials"
-  },
+  "scheduling": {"type":"indefinitely","intervalSeconds":900,"trigger":"Airtable Watch Records sobre Contenido por Ultima modificacion"},
+  "model": {"provider":"OpenAI","name":"gpt-5-nano","maxTokens":700,"maxWordsPromptInstruction":220},
   "modules": [
-    {"id": 2, "app": "Airtable", "name": "Watch Records", "table": "Contenido", "triggerField": "Ultima modificacion"},
-    {"id": 9, "app": "Make", "name": "Router HITL consolidado", "routes": 4},
-    {"id": 17, "app": "Airtable", "name": "Generacion - Buscar conocimiento", "table": "Base de Conocimiento", "maxRecords": 20},
-    {"id": 18, "app": "Tools", "name": "Generacion - Unir contexto RAG", "input": "Tema + Contenido"},
-    {"id": 19, "app": "OpenAI", "name": "Generacion - Generar borrador", "model": "gpt-5-nano", "maxTokens": 700, "promptUses": ["Idea Semilla", "contexto RAG agregado"]},
-    {"id": 21, "app": "Airtable", "name": "Generacion - Enviar a revision", "updates": ["Estado=En revision", "Aprobado=false", "Borrador IA=resultado IA"]},
-    {"id": 22, "app": "Slack", "name": "Generacion - Avisar revision"},
-    {"id": 23, "app": "Airtable", "name": "Generacion - Registrar ejecucion", "table": "Logs"},
-    {"id": 10, "app": "Airtable", "name": "Aprobado - Publicar", "updates": ["Estado=Publicado", "Resultado final=Borrador IA"]},
-    {"id": 13, "app": "Slack", "name": "Aprobado - Notificar publicacion"},
-    {"id": 25, "app": "Airtable", "name": "Aprobado - Registrar publicacion exitosa", "table": "Logs"},
-    {"id": 11, "app": "Slack", "name": "Rechazado - Notificar Slack"},
-    {"id": 14, "app": "Airtable", "name": "Rechazado - Registrar log", "table": "Logs"},
-    {"id": 31, "app": "Airtable", "name": "Rechazado - Marcar procesado", "updates": ["Rechazo procesado=true"]},
-    {"id": 12, "app": "Airtable", "name": "Incompleto - Registrar error", "table": "Errores"},
-    {"id": 15, "app": "Slack", "name": "Incompleto - Avisar Slack"},
-    {"id": 32, "app": "Airtable", "name": "Incompleto - Marcar procesado", "updates": ["Dato incompleto registrado=true"]},
-    {"id": 20, "app": "Airtable", "name": "Generacion - Registrar error IA", "table": "Errores"},
-    {"id": 24, "app": "Slack", "name": "Generacion - Alertar error IA"},
-    {"id": 27, "app": "Make", "name": "Generacion - Retry 3 intentos", "retry": true, "count": 3, "intervalMinutes": 1},
-    {"id": 16, "app": "Airtable", "name": "Aprobado - Registrar error publicacion", "table": "Errores"},
-    {"id": 26, "app": "Slack", "name": "Aprobado - Alertar error publicacion"},
-    {"id": 28, "app": "Make", "name": "Aprobacion - Retry 3 intentos", "retry": true, "count": 3, "intervalMinutes": 1}
+    {"id":2,"name":"Airtable - Watch Records"},
+    {"id":9,"name":"Router HITL consolidado"},
+    {"id":17,"name":"Generacion - Buscar conocimiento"},
+    {"id":18,"name":"Generacion - Unir contexto RAG"},
+    {"id":19,"name":"Generacion - Generar borrador","model":"gpt-5-nano","maxTokens":700},
+    {"id":21,"name":"Generacion - Enviar a revision"},
+    {"id":22,"name":"Generacion - Avisar revision Slack"},
+    {"id":33,"name":"Generacion - Guardar Slack Thread TS","mapping":"Slack output ts -> Contenido.Slack Thread TS"},
+    {"id":23,"name":"Generacion - Registrar ejecucion"},
+    {"id":10,"name":"Aprobado - Publicar"},
+    {"id":13,"name":"Aprobado - Notificar publicacion","thread_ts":"Contenido.Slack Thread TS"},
+    {"id":25,"name":"Aprobado - Registrar publicacion exitosa"},
+    {"id":11,"name":"Rechazado - Notificar Slack"},
+    {"id":14,"name":"Rechazado - Registrar log"},
+    {"id":31,"name":"Rechazado - Marcar procesado"},
+    {"id":12,"name":"Incompleto - Registrar error"},
+    {"id":15,"name":"Incompleto - Avisar Slack"},
+    {"id":32,"name":"Incompleto - Marcar procesado"},
+    {"id":20,"name":"Generacion - Registrar error IA"},
+    {"id":24,"name":"Generacion - Alertar error IA"},
+    {"id":27,"name":"Generacion - Retry 3 intentos"},
+    {"id":16,"name":"Aprobado - Registrar error publicacion"},
+    {"id":26,"name":"Aprobado - Alertar error publicacion"},
+    {"id":28,"name":"Aprobacion - Retry 3 intentos"}
   ],
   "routes": [
-    {"name": "Generar con idea", "condition": "Estado = Generando AND Idea Semilla != empty", "criticalAction": "Generar borrador con GPT-5 nano y dejar en En revision"},
-    {"name": "Aprobacion HITL", "condition": "Aprobado = true AND Estado = En revision", "criticalAction": "Publicar y registrar resultado final"},
-    {"name": "Solo rechazados no procesados", "condition": "Estado = Rechazado AND Rechazo procesado != true", "criticalAction": "Registrar rechazo sin salida externa"},
-    {"name": "Dato incompleto no procesado", "condition": "Estado = Generando AND Idea Semilla = empty AND Dato incompleto registrado != true", "criticalAction": "Registrar error sin consumir IA"}
+    {"name":"Generar con idea","condition":"Estado = Generando AND Idea Semilla != empty"},
+    {"name":"Aprobacion HITL","condition":"Aprobado = true AND Estado = En revision"},
+    {"name":"Solo rechazados no procesados","condition":"Estado = Rechazado AND Rechazo procesado != true"},
+    {"name":"Dato incompleto no procesado","condition":"Estado = Generando AND Idea Semilla = empty AND Dato incompleto registrado != true"}
   ],
   "runtimeValidation": {
-    "generationRAG": "PASS - 7 modulos, 0 errores, 8.03 creditos",
-    "approvalHITL": "PASS - 4 modulos, 0 errores",
-    "rejection": "PASS",
-    "missingIdeaSeed": "PASS",
-    "publicationErrorHandler": "PASS",
-    "antiLoop": "PASS - ejecucion posterior solo corrio trigger"
+    "generationAfterFinalFix":"PASS - e4f6d114b4ee4e188b98ba95073ed906 - 8 ops - 0 errors",
+    "approvalThreaded":"PASS - 6194e7390cd54569b90690e8a9709707 - 4 ops - 0 errors",
+    "slackThreadTs":"PASS - 1788835171.121349",
+    "rejection":"PASS",
+    "missingIdeaSeed":"PASS",
+    "publicationErrorHandler":"PASS",
+    "antiLoop":"PASS"
   },
   "security": [
     "Sin API keys ni secretos en repositorio",
@@ -57,7 +52,8 @@
     "Validacion antes de consumir IA",
     "HITL obligatorio antes de publicar",
     "Error handlers con Airtable + Slack + Break/Retry",
-    "Proteccion anti-loop con flags internos"
+    "Proteccion anti-loop con flags internos",
+    "Publicacion Slack organizada mediante thread_ts"
   ],
-  "note": "Snapshot tecnico sanitizado para entrega academica. Las credenciales reales permanecen en Make."
+  "note":"Snapshot tecnico sanitizado. Para el respaldo nativo importable, exportar el blueprint desde la UI de Make y guardar ese archivo adicional en blueprints/."
 }
