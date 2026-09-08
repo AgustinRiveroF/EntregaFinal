@@ -1,21 +1,13 @@
 # Evidencias
 
-Esta carpeta contiene capturas y referencias de validacion.
+Esta carpeta reúne evidencia visual y técnica del funcionamiento del ecosistema.
 
-## Capturas incluidas
+## Capturas
 
-- `screenshots/01_make_escenario_unico_final.jpg`: escenario unico final en Make con Router, rutas RAG/HITL/rechazo/incompleto, Error Handlers y Retry.
+- `screenshots/01_make_escenario_unico_final.jpg`: escenario final de Make.
+- `screenshots/02_evidencias_dashboard_pipeline_slack.jpg`: evidencia consolidada de Dashboard, pipeline de Airtable y conversación HITL en Slack.
 
-## Evidencia escrita
+## Evidencia técnica complementaria
 
-- `docs/VALIDACION_RUNTIME.md`: resultados reales de ejecuciones.
-- `tests/stress_test_plan.md`: pruebas y consumo observado.
-
-## Capturas recomendadas para el video o defensa oral
-
-- Make: ejecuciones PASS de generacion, aprobacion, rechazo y dato incompleto.
-- Airtable: registro en `En revision` con `Aprobado = false`.
-- Airtable: registro `Publicado` con `Resultado final`.
-- Airtable Dashboard: KPIs y tasa de errores.
-- Slack: mensajes de revision/publicacion/rechazo/error.
-
+- `docs/VALIDACION_RUNTIME.md`: resultados de ejecuciones reales.
+- `tests/stress_test_plan.md`: pruebas realizadas y validación de comportamiento.
